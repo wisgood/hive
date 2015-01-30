@@ -152,7 +152,7 @@
     <stax.version>1.0.1</stax.version>
     <slf4j.version>1.7.5</slf4j.version>
     <ST4.version>4.0.4</ST4.version>
-    <tez.version>0.5.2</tez.version>
+    <tez.version>0.5.3</tez.version>
     <super-csv.version>2.2.0</super-csv.version>
     <tempus-fugit.version>1.1</tempus-fugit.version>
     <snappy.version>0.2</snappy.version>
@@ -166,7 +166,28 @@
   </properties>
 
   <repositories>
-    <repository>
+	<repository>
+            <id>sogou.repo</id>
+            <url>http://cloud.sogou-inc.com/nexus/content/groups/public</url>
+            <name>Sogou Repository</name>
+        </repository>
+        <repository>
+            <id>sogou.repo.old</id>
+            <url>http://10.12.8.218:8080/nexus/content/groups/public</url>
+            <name>Old Sogou Repository</name>
+        </repository>
+        <repository>
+            <id>nexus</id>
+            <name>local private nexus</name>
+            <url>http://maven.oschina.net/content/groups/public/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
       <id>datanucleus</id>
       <name>datanucleus maven repository</name>
       <url>http://www.datanucleus.org/downloads/maven2</url>
