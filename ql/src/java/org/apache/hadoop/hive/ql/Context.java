@@ -341,12 +341,12 @@ public class Context {
    */
   public Path getExternalTmpPath(Path path) {
     URI extURI = path.toUri();
-    if (extURI.getScheme().equals("viewfs")) {
-      // if we are on viewfs we don't want to use /tmp as tmp dir since rename from /tmp/..
-      // to final /user/hive/warehouse/ will fail later, so instead pick tmp dir
-      // on same namespace as tbl dir.
-      return getExtTmpPathRelTo(path.getParent());
-    }
+//    if (extURI.getScheme().equals("viewfs")) {
+//      // if we are on viewfs we don't want to use /tmp as tmp dir since rename from /tmp/..
+//      // to final /user/hive/warehouse/ will fail later, so instead pick tmp dir
+//      // on same namespace as tbl dir.
+//      return getExtTmpPathRelTo(path.getParent());
+//    }
     return new Path(getExternalScratchDir(extURI), EXT_PREFIX +
         nextPathId());
   }
