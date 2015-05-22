@@ -164,6 +164,13 @@ public class HCatRecordSerDe implements SerDe {
     if (list == null) {
       return null;
     }
+    if (fields !=null && fields.size()>list.size()) {
+
+      LOG.warn("the struct shouble have "+fields.size()+"field ,but just only receive a contain "+list.size()+" field list");
+      LOG.warn("the list is "+list.toString());
+      LOG.warn("the struct field is "+fields.toString());
+      return null ;
+     }
 
     List<Object> l = new ArrayList<Object>(fields.size());
 
