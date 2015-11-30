@@ -36,6 +36,7 @@ import javax.security.auth.login.LoginException;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileStatus;
@@ -181,8 +182,13 @@ public class TezSessionState {
       tezConfig.setInt(TezConfiguration.TEZ_AM_SESSION_MIN_HELD_CONTAINERS, n);
     }
 
-    session = TezClient.create("HIVE-" + sessionId, tezConfig, true,
-        commonLocalResources, null);
+    boolean noName = StringUtils.isEmpty(conf.getVar(HiveConf.ConfVars.HADOOPJOBNAME));
+    if(noName) {
+        session = TezClient.create("HIVE-" + sessionId, tezConfig, true, commonLocalResources, null);
+    }else {
+        session = TezClient.create(conf.getVar(HiveConf.ConfVars.HADOOPJOBNAME), tezConfig, true, commonLocalResources, null);
+    }
+
 
     LOG.info("Opening new Tez Session (id: " + sessionId
         + ", scratch dir: " + tezScratchDir + ")");
