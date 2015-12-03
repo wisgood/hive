@@ -33,7 +33,8 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.mapred.TextInputFormat;
-
+import com.sogou.datadir.plugin.SymlinkLzoTextInputFormat ;
+import com.hadoop.mapred.DeprecatedLzoTextInputFormat;
 public class SymbolicInputFormat implements ReworkMapredInputFormat {
 
   public void rework(HiveConf job, MapredWork work) throws IOException {
@@ -48,9 +49,17 @@ public class SymbolicInputFormat implements ReworkMapredInputFormat {
       PartitionDesc partDesc = pathPartEntry.getValue();
       // this path points to a symlink path
       if (partDesc.getInputFileFormatClass().equals(
-          SymlinkTextInputFormat.class)) {
+          SymlinkTextInputFormat.class) ||partDesc.getInputFileFormatClass().equals(
+              SymlinkLzoTextInputFormat.class) ) {
         // change to TextInputFormat
-        partDesc.setInputFileFormatClass(TextInputFormat.class);
+        if(partDesc.getInputFileFormatClass().equals(
+                SymlinkTextInputFormat.class)) {
+        partDesc.setInputFileFormatClass(TextInputFormat.class);}
+          else {
+            partDesc.setInputFileFormatClass(DeprecatedLzoTextInputFormat.class);
+
+        }
+
         Path symlinkDir = new Path(path);
         FileSystem fileSystem = symlinkDir.getFileSystem(job);
         FileStatus fStatus = fileSystem.getFileStatus(symlinkDir);
@@ -67,15 +76,28 @@ public class SymbolicInputFormat implements ReworkMapredInputFormat {
           try {
             reader = new BufferedReader(new InputStreamReader(
                 fileSystem.open(symlink.getPath())));
+              if(partDesc.getInputFileFormatClass().equals(
+                      SymlinkTextInputFormat.class)) {
+                  partDesc.setInputFileFormatClass(TextInputFormat.class);}
+              else {
+                  partDesc.setInputFileFormatClass(DeprecatedLzoTextInputFormat.class);
 
-            partDesc.setInputFileFormatClass(TextInputFormat.class);
+              }
 
             String line;
             while ((line = reader.readLine()) != null) {
               // no check for the line? How to check?
               // if the line is invalid for any reason, the job will fail.
-              toAddPathToPart.put(line, partDesc);
-              pathToAliases.put(line, aliases);
+
+                FileStatus[] matches = fileSystem.globStatus(new Path(line));
+                for(FileStatus fileStatus :matches)
+                {
+                    toAddPathToPart.put(fileStatus.getPath().toUri().getPath(), partDesc);
+                    pathToAliases.put(fileStatus.getPath().toUri().getPath(), aliases);
+                }
+
+              //toAddPathToPart.put(line, partDesc);
+              //pathToAliases.put(line, aliases);
             }
           } finally {
             org.apache.hadoop.io.IOUtils.closeStream(reader);

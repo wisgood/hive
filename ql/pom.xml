@@ -380,6 +380,11 @@
       </exclusions>
     </dependency>
     <dependency>
+    <groupId>org.sogou.datadir-plugin</groupId>
+    <artifactId>datadir-plugin</artifactId>
+    <version>0.0.1</version>
+     </dependency>
+    <dependency>
       <groupId>org.apache.tez</groupId>
       <artifactId>tez-mapreduce</artifactId>
       <version>${tez.version}</version>

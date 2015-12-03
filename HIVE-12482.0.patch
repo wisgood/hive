@@ -1,0 +1,28 @@
+diff --git a/ql/src/java/org/apache/hadoop/hive/ql/exec/tez/TezSessionState.java b/ql/src/java/org/apache/hadoop/hive/ql/exec/tez/TezSessionState.java
+index 65a0090..6bb7ef4 100644
+--- a/ql/src/java/org/apache/hadoop/hive/ql/exec/tez/TezSessionState.java
++++ b/ql/src/java/org/apache/hadoop/hive/ql/exec/tez/TezSessionState.java
+@@ -36,6 +36,7 @@
+ 
+ import org.apache.commons.codec.digest.DigestUtils;
+ import org.apache.commons.io.FilenameUtils;
++import org.apache.commons.lang.StringUtils;
+ import org.apache.commons.logging.Log;
+ import org.apache.commons.logging.LogFactory;
+ import org.apache.hadoop.fs.FileStatus;
+@@ -181,8 +182,13 @@ public void open(HiveConf conf, String[] additionalFiles)
+       tezConfig.setInt(TezConfiguration.TEZ_AM_SESSION_MIN_HELD_CONTAINERS, n);
+     }
+ 
+-    session = TezClient.create("HIVE-" + sessionId, tezConfig, true,
+-        commonLocalResources, null);
++    boolean noName = StringUtils.isEmpty(conf.getVar(HiveConf.ConfVars.HADOOPJOBNAME));
++    if(noName) {
++        session = TezClient.create("HIVE-" + sessionId, tezConfig, true, commonLocalResources, null);
++    }else {
++        session = TezClient.create(conf.getVar(HiveConf.ConfVars.HADOOPJOBNAME), tezConfig, true, commonLocalResources, null);
++    }
++
+ 
+     LOG.info("Opening new Tez Session (id: " + sessionId
+         + ", scratch dir: " + tezScratchDir + ")");

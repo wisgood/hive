@@ -1,0 +1,98 @@
+diff --git a/build.sh b/build.sh
+index 6ea9b61..8c75c8e 100644
+--- a/build.sh
++++ b/build.sh
+@@ -2,4 +2,4 @@
+ 
+ export MAVEN_OPTS=-Xmx512m
+ mvn clean 
+-mvn package -Phadoop-2,dist -Dmaven.test.skip=true
++mvn package -Phadoop-1,dist -Dmaven.test.skip=true
+diff --git a/ql/pom.xml b/ql/pom.xml
+index 2e918dc..e01873a 100644
+--- a/ql/pom.xml
++++ b/ql/pom.xml
+@@ -380,6 +380,11 @@
+       </exclusions>
+     </dependency>
+     <dependency>
++    <groupId>org.sogou.datadir-plugin</groupId>
++    <artifactId>datadir-plugin</artifactId>
++    <version>0.0.1</version>
++     </dependency>
++    <dependency>
+       <groupId>org.apache.tez</groupId>
+       <artifactId>tez-mapreduce</artifactId>
+       <version>${tez.version}</version>
+diff --git a/ql/src/java/org/apache/hadoop/hive/ql/exec/tez/TezSessionState.java b/ql/src/java/org/apache/hadoop/hive/ql/exec/tez/TezSessionState.java
+index 65a0090..6bb7ef4 100644
+--- a/ql/src/java/org/apache/hadoop/hive/ql/exec/tez/TezSessionState.java
++++ b/ql/src/java/org/apache/hadoop/hive/ql/exec/tez/TezSessionState.java
+@@ -36,6 +36,7 @@
+ 
+ import org.apache.commons.codec.digest.DigestUtils;
+ import org.apache.commons.io.FilenameUtils;
++import org.apache.commons.lang.StringUtils;
+ import org.apache.commons.logging.Log;
+ import org.apache.commons.logging.LogFactory;
+ import org.apache.hadoop.fs.FileStatus;
+@@ -181,8 +182,13 @@ public void open(HiveConf conf, String[] additionalFiles)
+       tezConfig.setInt(TezConfiguration.TEZ_AM_SESSION_MIN_HELD_CONTAINERS, n);
+     }
+ 
+-    session = TezClient.create("HIVE-" + sessionId, tezConfig, true,
+-        commonLocalResources, null);
++    boolean noName = StringUtils.isEmpty(conf.getVar(HiveConf.ConfVars.HADOOPJOBNAME));
++    if(noName) {
++        session = TezClient.create("HIVE-" + sessionId, tezConfig, true, commonLocalResources, null);
++    }else {
++        session = TezClient.create(conf.getVar(HiveConf.ConfVars.HADOOPJOBNAME), tezConfig, true, commonLocalResources, null);
++    }
++
+ 
+     LOG.info("Opening new Tez Session (id: " + sessionId
+         + ", scratch dir: " + tezScratchDir + ")");
+diff --git a/ql/src/java/org/apache/hadoop/hive/ql/io/CombineHiveInputFormat.java b/ql/src/java/org/apache/hadoop/hive/ql/io/CombineHiveInputFormat.java
+index 35db50c..9f880e4 100644
+--- a/ql/src/java/org/apache/hadoop/hive/ql/io/CombineHiveInputFormat.java
++++ b/ql/src/java/org/apache/hadoop/hive/ql/io/CombineHiveInputFormat.java
+@@ -61,6 +61,7 @@
+ import org.apache.hadoop.mapred.RecordReader;
+ import org.apache.hadoop.mapred.Reporter;
+ import org.apache.hadoop.mapred.TextInputFormat;
++import com.sogou.datadir.plugin.SymlinkLzoTextInputFormat ;
+ 
+ 
+ /**
+@@ -360,7 +361,7 @@ public int hashCode() {
+         }
+       }
+       //don't combine if inputformat is a SymlinkTextInputFormat
+-      if (inputFormat instanceof SymlinkTextInputFormat) {
++      if (inputFormat instanceof SymlinkTextInputFormat || inputFormat instanceof SymlinkLzoTextInputFormat) {
+         splits = super.getSplits(job, numSplits);
+         perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_SPLITS);
+         return splits;
+diff --git a/ql/src/java/org/apache/hadoop/hive/ql/io/SymbolicInputFormat.java b/ql/src/java/org/apache/hadoop/hive/ql/io/SymbolicInputFormat.java
+index 37e3879..852ac68 100644
+--- a/ql/src/java/org/apache/hadoop/hive/ql/io/SymbolicInputFormat.java
++++ b/ql/src/java/org/apache/hadoop/hive/ql/io/SymbolicInputFormat.java
+@@ -33,7 +33,7 @@
+ import org.apache.hadoop.hive.ql.plan.MapredWork;
+ import org.apache.hadoop.hive.ql.plan.PartitionDesc;
+ import org.apache.hadoop.mapred.TextInputFormat;
+-
++import com.sogou.datadir.plugin.SymlinkLzoTextInputFormat ;
+ public class SymbolicInputFormat implements ReworkMapredInputFormat {
+ 
+   public void rework(HiveConf job, MapredWork work) throws IOException {
+@@ -48,7 +48,8 @@ public void rework(HiveConf job, MapredWork work) throws IOException {
+       PartitionDesc partDesc = pathPartEntry.getValue();
+       // this path points to a symlink path
+       if (partDesc.getInputFileFormatClass().equals(
+-          SymlinkTextInputFormat.class)) {
++          SymlinkTextInputFormat.class) ||partDesc.getInputFileFormatClass().equals(
++              SymlinkLzoTextInputFormat.class) ) {
+         // change to TextInputFormat
+         partDesc.setInputFileFormatClass(TextInputFormat.class);
+         Path symlinkDir = new Path(path);

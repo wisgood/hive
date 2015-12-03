@@ -247,6 +247,11 @@
         <version>${guava.version}</version>
       </dependency>
       <dependency>
+                  <groupId>com.hadoop.gplcompression</groupId>
+                              <artifactId>hadoop-lzo</artifactId>
+                                          <version>0.4.15</version>
+                                                  </dependency>
+      <dependency>
         <groupId>com.google.protobuf</groupId>
         <artifactId>protobuf-java</artifactId>
         <version>${protobuf.version}</version>

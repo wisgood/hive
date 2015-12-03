@@ -61,6 +61,7 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.TextInputFormat;
+import com.sogou.datadir.plugin.SymlinkLzoTextInputFormat ;
 
 
 /**
@@ -360,7 +361,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
         }
       }
       //don't combine if inputformat is a SymlinkTextInputFormat
-      if (inputFormat instanceof SymlinkTextInputFormat) {
+      if (inputFormat instanceof SymlinkTextInputFormat || inputFormat instanceof SymlinkLzoTextInputFormat) {
         splits = super.getSplits(job, numSplits);
         perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_SPLITS);
         return splits;
