@@ -338,9 +338,9 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
             dirs.offer(path);
           } else if ((new CompressionCodecFactory(job)).getCodec(path) != null) {
             //if compresssion codec is set, use HiveInputFormat.getSplits (don't combine)
-            splits = super.getSplits(job, numSplits);
-            perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_SPLITS);
-            return splits;
+        //    splits = super.getSplits(job, numSplits);
+          //  perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_SPLITS);
+           // return splits;
           }
 
           while (dirs.peek() != null) {
@@ -352,9 +352,9 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
               } else if ((new CompressionCodecFactory(job)).getCodec(
                   fStatus[idx].getPath()) != null) {
                 //if compresssion codec is set, use HiveInputFormat.getSplits (don't combine)
-                splits = super.getSplits(job, numSplits);
-                perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_SPLITS);
-                return splits;
+             //   splits = super.getSplits(job, numSplits);
+              //  perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_SPLITS);
+               // return splits;
               }
             }
           }
@@ -362,9 +362,9 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
       }
       //don't combine if inputformat is a SymlinkTextInputFormat
       if (inputFormat instanceof SymlinkTextInputFormat || inputFormat instanceof SymlinkLzoTextInputFormat) {
-        splits = super.getSplits(job, numSplits);
-        perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_SPLITS);
-        return splits;
+       // splits = super.getSplits(job, numSplits);
+       // perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_SPLITS);
+      //  return splits;
       }
 
       Path filterPath = path;
